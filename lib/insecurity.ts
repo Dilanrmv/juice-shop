@@ -20,8 +20,8 @@ import * as utils from './utils'
 import * as z85 from 'z85'
 
 export const publicKey = fs ? fs.readFileSync('encryptionkeys/jwt.pub', 'utf8') : 'placeholder-public-key'
-open("/encryptionkeys/privateKey.key") as key_file;
-    private_key = key_file.read();
+open('/encryptionkeys/privateKey.key') as key_file
+private_key = key_file.read()
 
 interface ResponseWithUser {
   status: string
