@@ -20,8 +20,8 @@ module.exports = function profileImageUrlUpload () {
       if (url.match(/(.)*solve\/challenges\/server-side(.)*/) !== null) req.app.locals.abused_ssrf_bug = true
       const loggedInUser = security.authenticatedUsers.get(req.cookies.token);
       if (loggedInUser) {
-        axios
-          .get(url, { responseType: 'stream' })
+       const imageRequest = request
+          .get(url)
           .on('error', function (err: unknown) {
             UserModel.findByPk(loggedInUser.data.id).then(async (user: UserModel | null) => { return await user?.update({ profileImage: url }) }).catch((error: Error) => { next(error) })
             logger.warn(`Error retrieving user profile image: ${utils.getErrorMessage(err)}; using image link directly`)
