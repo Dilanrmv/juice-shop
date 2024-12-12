@@ -89,16 +89,33 @@ exports.checkVulnLines = () => async (req: Request<Record<string, unknown>, Reco
   const neutralLines: number[] = snippetData.neutralLines
   const selectedLines: number[] = req.body.selectedLines
   const verdict = getVerdict(vulnLines, neutralLines, selectedLines)
-  let hint
-  if (fs.accessSync('./data/static/codefixes/' + key + '.info.yml', fs.constanst.F_OK)) {
-    const codingChallengeInfos = yaml.load(fs.readFileSync('./data/static/codefixes/' + key + '.info.yml', 'utf8'))
-    if (codingChallengeInfos?.hints) {
-      if (accuracy.getFindItAttempts(key) > codingChallengeInfos.hints.length) {
-        if (vulnLines.length === 1) {
-          hint = res.__('Line {{vulnLine}} is responsible for this vulnerability or security flaw. Select it and submit to proceed.', { vulnLine: vulnLines[0].toString() })
-        } else {
-          hint = res.__('Lines {{vulnLines}} are responsible for this vulnerability or security flaw. Select them and submit to proceed.', { vulnLines: vulnLines.toString() })
-        }
+let hint;
+// Verificar si el archivo existe antes de intentar leerlo
+const filePath = './data/static/codefixes/' + key + '.info.yml';
+
+try {
+  // Verifica si el archivo existe
+  fs.accessSync(filePath, fs.constants.F_OK); // Verifica si el archivo existe
+  
+  // Si el archivo es accesible, se puede leer
+  const codingChallengeInfos = yaml.load(fs.readFileSync(filePath, 'utf8'));
+  
+  // Procesa la información si tiene pistas
+  if (codingChallengeInfos?.hints) {
+    if (accuracy.getFindItAttempts(key) > codingChallengeInfos.hints.length) {
+      if (vulnLines.length === 1) {
+        hint = res.__('Line {{vulnLine}} is responsible for this vulnerability or security flaw. Select it and submit to proceed.', { vulnLine: vulnLines[0].toString() });
+      } else {
+        hint = res.__('Lines {{vulnLines}} are responsible for this vulnerability or security flaw. Select them and submit to proceed.', { vulnLines: vulnLines.toString() });
+      }
+    }
+  }
+} catch (err) {
+  // Captura el error si el archivo no existe o si hay un problema con los permisos
+  console.error('Error al acceder al archivo:', err.message);
+  // Puedes manejar el error según lo que sea necesario, por ejemplo, devolviendo una respuesta de error
+  res.status(500).json({ error: 'No se pudo acceder al archivo.' });
+}
       } else {
         const nextHint = codingChallengeInfos.hints[accuracy.getFindItAttempts(key) - 1] // -1 prevents after first attempt
         if (nextHint) hint = res.__(nextHint)
