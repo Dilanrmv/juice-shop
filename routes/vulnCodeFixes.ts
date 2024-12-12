@@ -75,18 +75,36 @@ export const checkCorrectFix = () => async (req: Request<Record<string, unknown>
       error: 'No fixes found for the snippet!'
     })
   } else {
-    let explanation
-    if (fs.accessSync('./data/static/codefixes/' + key + '.info.yml')) {
-      const codingChallengeInfos = yaml.load(fs.readFileSync('./data/static/codefixes/' + key + '.info.yml', 'utf8'))
-      const selectedFixInfo = codingChallengeInfos?.fixes.find(({ id }: { id: number }) => id === selectedFix + 1)
-      if (selectedFixInfo?.explanation) explanation = res.__(selectedFixInfo.explanation)
-    }
-    if (selectedFix === fixData.correct) {
-      await challengeUtils.solveFixIt(key)
-      res.status(200).json({
-        verdict: true,
-        explanation
-      })
+   const fs = require('fs');
+const yaml = require('js-yaml');
+
+let explanation;
+try {
+  // Verificar si el archivo existe y es accesible
+  fs.accessSync('./data/static/codefixes/' + key + '.info.yml', fs.constants.F_OK);
+
+  // Leer y procesar el archivo YAML
+  const codingChallengeInfos = yaml.load(fs.readFileSync('./data/static/codefixes/' + key + '.info.yml', 'utf8'));
+  
+  // Buscar la información de la corrección
+  const selectedFixInfo = codingChallengeInfos?.fixes.find(({ id }) => id === selectedFix + 1);
+  
+  // Asignar la explicación si existe
+  if (selectedFixInfo?.explanation) explanation = res.__(selectedFixInfo.explanation);
+
+} catch (err) {
+  // Captura de errores si el archivo no existe o no es accesible
+  console.error('No se pudo acceder al archivo:', err.message);
+}
+
+if (selectedFix === fixData.correct) {
+  await challengeUtils.solveFixIt(key);
+  res.status(200).json({
+    verdict: true,
+    explanation
+  });
+}
+
     } else {
       accuracy.storeFixItVerdict(key, false)
       res.status(200).json({
