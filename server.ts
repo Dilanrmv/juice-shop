@@ -294,7 +294,7 @@ restoreOverwrittenFilesWithOriginals().then(() => {
   /* File Upload */
   app.post('/file-upload', uploadToMemory.single('file'), ensureFileIsPassed, metrics.observeFileUploadMetricsMiddleware(), handleZipFileUpload, checkUploadSize, checkFileType, handleXmlUpload)
   app.post('/profile/image/file', uploadToMemory.single('file'), ensureFileIsPassed, metrics.observeFileUploadMetricsMiddleware(), profileImageFileUpload())
-  app.post('/profile/image/url', uploadToMemory.single('file'), profileImageUrlUpload);
+  app.post('/profile/image/url', uploadToMemory.single('file'), profileImageUrlUpload());
   app.post('/rest/memories', uploadToDisk.single('image'), ensureFileIsPassed, security.appendUserId(), metrics.observeFileUploadMetricsMiddleware(), memory.addMemory())
 
   app.use(bodyParser.text({ type: '*/*' }))
@@ -561,7 +561,7 @@ restoreOverwrittenFilesWithOriginals().then(() => {
   }
 
   /* Custom Restful API */
-  app.post('/rest/user/login', login)
+  app.post('/rest/user/login', login())
   app.get('/rest/user/change-password', changePassword())
   app.post('/rest/user/reset-password', resetPassword())
   app.get('/rest/user/security-question', securityQuestion())
